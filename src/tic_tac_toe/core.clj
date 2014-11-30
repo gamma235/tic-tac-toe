@@ -2,10 +2,10 @@
   (:require [clojure.set :as s]))
 
 ;; game state
-;; todo: use recursion to generate some of these lists
-(def board (ref {:a1 :x, :a2 nil, :a3 nil, :b1 nil, :b2 nil, :b3 nil, :c1 nil, :c2 nil, :c3 :x}))
+;; todo: use recursion to generate the board and special positions sequences
+(def board (ref {:a1 nil, :a2 nil, :a3 nil, :b1 nil, :b2 nil, :b3 nil, :c1 nil, :c2 nil, :c3 nil}))
 (def move (ref 0))
-(def human (ref #{:a1 :c3}))
+(def human (ref #{}))
 (def computer(ref #{}))
 
 ;; special positions
@@ -146,10 +146,3 @@
 (defn go
   "starts a game loop that goes, updates screen, gets user input, updates the screen, then goes again, til somebody wins and finishes"
   [])
-
-
-;;; FOR THE REPL : TO BE DELETED
-((winning-strategy))
-(deref board)
-
-;; TODO: GUI or browser UI, start screen, midis, refactoring, tighten strategies and tests for optimal behavior and performance
