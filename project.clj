@@ -11,6 +11,8 @@
 
   :source-paths ["src"]
 
+  :main tic-tac-toe.core
+
   :cljsbuild {
     :builds [{:id "tic-tac-toe"
               :source-paths ["src"]
