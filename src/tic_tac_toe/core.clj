@@ -1,6 +1,6 @@
 (ns tic-tac-toe.core
   (:require [clojure.set :as s]
-            [tic-tac-toe.protocols :refer :all]))
+            [tic-tac-toe.protocol :refer :all]))
 
 ;; game state
 ;; todo: use recursion to generate the board and special positions sequences
