@@ -68,7 +68,7 @@
   (remove #(= nil %) (for [side sides]
                        (if-not (side @board) side))))
 
-;;;; strategies ;;;;
+;;;; strategies protocol implmementation;;;;
 (defrecord StrategyImpl []
 
   Strategy
@@ -82,6 +82,7 @@
          (take-turn computer {(third human) " o "})
          (println "Oh snap! Blocked!"))
 
+  ;; both fork and block fork will be updated to allow the computer to play a more nuanced game
   (fork [_]
         (println "forking")
         (let [my-complimentary-corners (first (filter #(= (count %) 2)
@@ -175,8 +176,6 @@
   (can-take-side? [_]
                   (if (and (not (empty? (available-sides))) (first (available-sides))) take-side)))
 ;;;;;;;;;;;;;;;;;;;;
-
-;; This will be the last thing
 (defn -main []
   "starts a game loop that goes, updates screen, gets user input, updates the screen, then goes again, til somebody wins and finishes"
   (let [strategy          (StrategyImpl.)

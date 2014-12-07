@@ -1,4 +1,4 @@
-(ns tic-tac-toe.protocols)
+(ns tic-tac-toe.protocol)
 
 
 ;; Creating protocol for both the strategies and the tests that check to see if they are possible
