@@ -201,7 +201,7 @@
       (if (board-full?) (println "Tie game \nThanks for playing!")
         (do
           ((winning-strategy) strategy)
-          (if (has3? computer) (println "I win! \nYou Lose!")
+          (if (has3? computer) (do (print-board) (println "I win!"))
             (if (board-full?) (println "Tie game \nThanks for playing!")
               (do
                 (println "Your Turn")
