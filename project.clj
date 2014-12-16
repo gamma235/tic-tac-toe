@@ -4,6 +4,7 @@
 
   :dependencies [[org.clojure/clojure "1.7.0-alpha4"]
                  [org.clojure/clojurescript "0.0-2371"]
+                 [org.clojure/core.typed "0.2.72"]
                  [expectations "2.0.4"]
                  [lein-autoexpect "1.2.2"]]
 

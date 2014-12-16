@@ -1,26 +1,57 @@
-(ns tic-tac-toe.protocol)
-
+(ns tic-tac-toe.protocol
+  (:require [clojure.core.typed :refer :all]))
 
 ;; Creating protocol for both the strategies and the tests that check to see if they are possible
+;; Annotating the protocol for richer specification of type constraints on implementations
 (defprotocol Strategy
   "Strategy methods update the Tic-tac-toe board when they are called"
 
-  ;; strategies
-  (win [_] "wins the game by filling an open space to get 3 in a row")
-  (block [_] "blocks an opponents win by filling an open space")
-  (fork [_] "creates a two way win scenario guaranteeing victory")
-  (block-fork [_] "prevents an opponent from forking")
-  (take-center [_] "takes center")
-  (take-opposite-corner [_] "takes a corner opposite to one the computer already has")
-  (take-corner [_] "takes an avaiable corner")
-  (take-side [_] "takes an available side")
+  ;; strategy methods : 'this' as a first argument is inferred so only the return values are made explicit
+  (win [this] :- (Set (Option Kw))
+   "wins the game by filling an open space to get 3 in a row")
 
-  ;; tests
-  (can-win? [_])
-  (can-block? [_])
-  (can-fork? [_])
-  (can-block-fork? [_])
-  (can-take-center? [_])
-  (can-take-opposite-corner? [_])
-  (can-take-corner? [_])
-  (can-take-side? [_]))
+  (block [this] :- (Set (Option Kw))
+   "blocks an opponents win by filling an open space")
+
+  (fork [this] :- (Set (Option Kw))
+   "creates a two way win scenario guaranteeing victory")
+
+  (block-fork [this] :- (Set (Option Kw))
+   "prevents an opponent from forking")
+
+  (take-center [this] :- (Set (Option Kw))
+   "takes center")
+
+  (take-opposite-corner [this] :- (Set (Option Kw))
+   "takes a corner opposite to one the computer already has")
+
+  (take-corner [this] :- (Set (Option Kw))
+   "takes an avaiable corner")
+
+  (take-side [this] :- nil
+   "takes an available side")
+
+  ;; validation methods
+  (can-win? [this]
+   :- (Option [Strategy -> nil]))
+
+  (can-block? [this]
+   :- (Option [Strategy -> nil]))
+
+  (can-fork? [this]
+   :- (Option [Strategy -> nil]))
+  (can-block-fork? [this]
+   :- (Option [Strategy -> nil]))
+
+  (can-take-center? [this]
+   :- (Option [Strategy -> nil]))
+
+  (can-take-opposite-corner? [this]
+   :- (Option [Strategy -> nil]))
+
+  (can-take-corner? [this]
+   :- (Option [Strategy -> nil]))
+
+  (can-take-side? [this]
+   :- (Option [Strategy -> nil])))
+
