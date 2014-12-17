@@ -32,26 +32,18 @@
    "takes an available side")
 
   ;; validation methods
-  (can-win? [this]
-   :- (Option [Strategy -> nil]))
+  (can-win? [this] :- (Option [Strategy -> nil]))
 
-  (can-block? [this]
-   :- (Option [Strategy -> nil]))
+  (can-block? [this] :- (Option [Strategy -> nil]))
 
-  (can-fork? [this]
-   :- (Option [Strategy -> nil]))
-  (can-block-fork? [this]
-   :- (Option [Strategy -> nil]))
+  (can-fork? [this] :- (Option [Strategy -> nil]))
 
-  (can-take-center? [this]
-   :- (Option [Strategy -> nil]))
+  (can-block-fork? [this] :- (Option [Strategy -> nil]))
 
-  (can-take-opposite-corner? [this]
-   :- (Option [Strategy -> nil]))
+  (can-take-center? [this] :- (Option [Strategy -> nil]))
 
-  (can-take-corner? [this]
-   :- (Option [Strategy -> nil]))
+  (can-take-opposite-corner? [this] :- (Option [Strategy -> nil]))
 
-  (can-take-side? [this]
-   :- (Option [Strategy -> nil])))
+  (can-take-corner? [this] :- (Option [Strategy -> nil]))
 
+  (can-take-side? [this] :- (Option [Strategy -> nil])))
