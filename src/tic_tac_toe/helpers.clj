@@ -87,25 +87,28 @@
   (remove nil? (for [side :- Kw, sides] :- (Option Kw)
                  (if-not (@board side) side))))
 
-(defn fork-seq [player]
-  (let [current @player
+(defn fork-seq [player :- Player] :- (ASeq (Option Kw))
+  (let [current :- Key-set, @player
 
-        doppel-twos  (fn [space]
-                     (let [doppelganger (ref (set (conj current space)))]
-                       (for [two (first-twos doppelganger)]
-                         (ref (set two)))))
+        doppel-twos :- [Kw -> (ASeq Player)]
+        (fn [space :- Kw] :- (ASeq Player)
+          (let [doppelganger :- Player, (ref (set (conj current space)))]
+            (for [two :- Key-set, (first-twos doppelganger)] :- Player
+              (ref (set two)))))
 
-        get-squares (fn [space]
-                      (let [doppelganger (ref (conj current space))]
-                        (apply concat (first-twos doppelganger))))
+        get-squares :- [Kw -> (Aseq Kw)]
+        (fn [space :- kw] :- (ASeq Kw)
+          (let [doppelganger :- Player, (ref (conj current space))]
+            (apply concat (first-twos doppelganger))))
 
-        winnable? (fn [space]
-                    (let [doppelganger (ref (set (conj current space)))]
-                      (if (and (has-two? doppelganger)
-                               (third doppelganger)
-                               (not (@board (third doppelganger))))
-                        true)))]
-    (remove nil? (for [square (keys @board)]
+        winnable? :- [Kw -> (Option Bool)]
+        (fn [space :- Kw] :- (Option Bool)
+          (let [doppelganger :- Player, (ref (set (conj current space)))]
+            (if (and (has-two? doppelganger)
+                     (third doppelganger)
+                     (not (@board (third doppelganger))))
+              true)))]
+    (remove nil? (for [square :- Kw, (keys @board)] :- (Option Kw)
                    (if (and (not (@board square))
                             (<= 2 (count (remove nil? (map third (doppel-twos square)))))
                             (not (@human square))
