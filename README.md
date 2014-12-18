@@ -4,7 +4,7 @@ WISH LIST:
 
 [2] midis
 
-[3] full type checking
+[3] full type checking on record.clj file
 
 [4] easy mode and hard mode
 
@@ -14,16 +14,14 @@ ________________________________________________________________________________
 
 KNOWN BUGS:
 
-[1] sometimes computer thinks it is blocking a human from forking, when it actually isn't.
+1. sometimes computer thinks it is blocking a human from forking, when it actually isn't.
 
-[2] using a lot of
+2. using a lot of
 
     '(if (< 1 (count coll)) do-this)'
 
-type branching. Get's the job done, but may cause trouble in edge cases
-
-[3] using a lot of
+and
 
     '(take (first (get-best-moves)))'
 
-type code, to just get a good move and take it. Imprecise and leads to suboptimal game-play
+type code, to just get a good move and take it. Gets the job done but is a temporary solution.
