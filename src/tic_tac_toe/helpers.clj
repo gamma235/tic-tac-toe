@@ -9,16 +9,29 @@
 (defalias Move (U ':x ':o))
 
 ;; unannotated clojure.core functions
-(ann clojure.core/hash-map [Key-set Kw -> Any])
-(ann clojure.core/apply [[Key-set Kw -> Any] (Seq (U Key-set Kw)) -> (Map Key-set Kw)])
+(ann ^:no-check clojure.core/flatten [(ASeq (Option Kw (Seq Kw))) -> (ASeq Kw)])
+(ann ^:no-check clojure.core/hash-map [Key-set Kw -> Any])
+(ann ^:no-check clojure.core/apply [[Key-set Kw -> Any] (Seq (U Key-set Kw)) -> (Map Key-set Kw)])
 
 ;; GAME STATE
-;; :no-check due to core.typed's problem with refs
-(clojure.core.typed/def ^:no-check human :- Player (ref #{}))
-(clojure.core.typed/def ^:no-check computer :- Player (ref #{}))
+
+;; Players
+
+;;========================================================================
+;; NOTE: I am using :no-check due to this error                          |
+;;                                                                       |
+;; IllegalArgumentException No value supplied for key: true              |
+;; clojure.lang.PersistentHashMap.create (PersistentHashMap.java:77)     |
+;;_______________________________________________________________________|
+
+(ann human Player)
+(clojure.core.typed/def ^:no-check human (ref #{}))
+
+(ann computer Player)
+(clojure.core.typed/def ^:no-check computer (ref #{}))
 
 ;; board
-(clojure.core.typed/def board :- (Ref1 (HMap :mandatory {:a1 (Option Str), :a2 (Option Str), :a3 (Option Str), :b1 (Option Str), :b2 (Option Str), :b3 (Option Str), :c1 (Option Str), :c2 (Option Str), :c3 (Option Str)})),
+(clojure.core.typed/def board :- (Ref1 (Map Kw (Option Str)))
   (ref {:a1 nil, :a2 nil, :a3 nil, :b1 nil, :b2 nil, :b3 nil, :c1 nil, :c2 nil, :c3 nil}))
 
 ;; special positions
@@ -42,12 +55,12 @@
 (defn has-two? [player :- Player] :- Bool
   (not (empty? (first-twos player))))
 
-
 (defn has-opposite-corners? [player :- Player] :- Bool
   (not (empty? (filter (fn [a :- (Option Key-set)] (= (count a) 2))
                        (for [pair :- Key-set, opposite-corners] :- (Option Key-set)
                          (s/intersection pair @player))))))
 
+;; two type checking errors here!
 (defn third [player :- Player] :- (Option Kw)
   (let [adjacent-compliments :- (Vec Kw), [:a3 :c1 :c3 :a1 :c2 :c1 :c3 :b3 :a1 :b1 :a2 :a1 :a3 :c3 :c1]
         adjacent-thirds :- (Seq (U Kw Key-set)), (interleave adjacents adjacent-compliments)
@@ -55,24 +68,24 @@
         opposite-sides-compliments :- (Vec Kw), [:a2 :b1 :b2 :b3 :b2 :c2]
         opposite-sides-thirds :- (Seq (U Kw Key-set)), (interleave opposite-sides opposite-sides-compliments)
         thirds-lookup :- (Map Key-set Kw), (apply hash-map (concat adjacent-thirds opposite-corners-thirds opposite-sides-thirds))
-        pairs :- Set-vec, (first-twos player)
-        potential-thirds :- (ASeq Kw),  (for [pair :- Key-set, pairs] :- Kw,
-                                          (map
-                                           (fn [triplet :- Key-set] :- Kw,
-                                             (if (and
-                                                  (= triplet (conj pair (thirds-lookup pair)))
-                                                  (not (@human (thirds-lookup pair))))
-                                               (thirds-lookup pair)))
-                                           triplets))]
-    (first (remove nil? (flatten potential-thirds)))))
+        pairs :- (ASeq (Option Key-set)), (first-twos player)
+        potential-thirds :- (ASeq (ASeq (Option Kw))), (for [pair :- Key-set, pairs] :- (ASeq (Option Kw)),
+                                                         (map
+                                                          (fn [triplet :- Key-set] :- Kw,
+                                                            (if (and
+                                                                 (= triplet (conj pair (thirds-lookup pair)))
+                                                                 (not (@human (thirds-lookup pair))))
+                                                              (thirds-lookup pair)))
+                                                          triplets))
+        flat-thirds :- (ASeq (Option Kw)), (flatten potential-thirds)]
+    (first (remove nil? flat-thirds))))
 
-;; won't check due to core.typed bug dealing with refs
-(defn ^:no-check take-turn [player :- (Ref1 Key-set),  position :- (Map Kw String)] :- Key-set
+(defn take-turn [player :- Player,  position :- (Map Kw String)] :- nil
   (dosync
    (alter board merge position)
    (alter player s/union #{(first (keys position))})))
 
-(defn available-corners [] :- (Seq (Option Kw))
+(defn available-corners [] :- (ASeq (Option Kw))
   (remove nil? (for [corner :- Kw, corners] :- (Option Kw)
                  (if-not (@board corner) corner))))
 

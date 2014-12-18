@@ -28,7 +28,7 @@
   (take-corner [this] :- (Set (Option Kw))
    "takes an avaiable corner")
 
-  (take-side [this] :- nil
+  (take-side [this] :- (Set (Option Kw))
    "takes an available side")
 
   ;; validation methods
