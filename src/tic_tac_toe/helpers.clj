@@ -69,16 +69,16 @@
         opposite-sides-thirds :- (Seq (U Kw Key-set)), (interleave opposite-sides opposite-sides-compliments)
         thirds-lookup :- (Map Key-set Kw), (apply hash-map (concat adjacent-thirds opposite-corners-thirds opposite-sides-thirds))
         pairs :- (ASeq (Option Key-set)), (first-twos player)
-        potential-thirds :- (ASeq (ASeq (Option Kw))), (for [pair :- Key-set, pairs] :- (ASeq (Option Kw)),
+        potential-thirds :- (ASeq (ASeq (Option Kw))), (remove nil? (for [pair :- Key-set, pairs] :- (ASeq (Option Kw)),
                                                          (map
                                                           (fn [triplet :- Key-set] :- Kw,
                                                             (if (and
                                                                  (= triplet (conj pair (thirds-lookup pair)))
                                                                  (not (@human (thirds-lookup pair))))
                                                               (thirds-lookup pair)))
-                                                          triplets))
-        flat-thirds :- (ASeq (Option Kw)), (flatten potential-thirds)]
-    (first (remove nil? flat-thirds))))
+                                                          triplets)))
+        flat-thirds :- (ASeq Kw), (flatten potential-thirds)]
+    (first flat-thirds)))
 
 (defn take-turn [player :- Player,  position :- (Map Kw String)] :- nil
   (dosync
@@ -100,6 +100,7 @@
   (remove nil? (for [side :- Kw, sides] :- (Option Kw)
                  (if-not (@board side) side))))
 
+;; TODO: add check to block-fork method for '(if-not (empty (for [two :- Key-set (first-twos (conj current-human square))] (human-winnable? two))))'
 (defn fork-seq [player :- Player] :- (ASeq (Option Kw))
   (let [current :- Key-set, @player
 
