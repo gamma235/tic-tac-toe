@@ -8,32 +8,32 @@
 (defrecord StrategyImpl []
 
   Strategy
-  (win [_ ]
+  (win [this]
        (println "winning")
        (take-turn computer {(third computer) " o "})
        (println "You lose!"))
 
-  (block [_ ]
+  (block [this]
          (println "blocking")
          (take-turn computer {(third human) " o "})
          (println "Oh snap! Blocked!"))
 
-  (fork [_ ]
+  (fork [this]
         (println "forking")
         (take-turn computer {(first (fork-seq computer)) " o "})
         (println "fork?"))
 
-  (block-fork [_ ]
+  (block-fork [this]
               (println "blocking your fork")
               (take-turn computer {(first (fork-seq human)) " o "})
               (println "fork totally blocked!"))
 
-  (take-center [_ ]
+  (take-center [this]
                (println "taking center")
                (take-turn computer {middle " o "})
                (println "got the middle!"))
 
-  (take-opposite-corner [_ ]
+  (take-opposite-corner [this]
                         (println "taking opposite corner")
                         (let [my-corners :- (Set (Option Kw)), (s/intersection corners @computer)
                               candidate-corner :- (Option Kw), (first (for [corner :- (Option Kw), my-corners] :- (Option Kw)
@@ -42,7 +42,7 @@
                           (take-turn computer {candidate-corner " o "})
                           (println "Got the opposite corner")))
 
-  (take-corner [_ ]
+  (take-corner [this]
                (println "taking corner")
                (let [candidate-corner :- Kw, (first (for [corner :- Kw, (available-corners)] :- (Option Kw)
                                                       (if-not (@board corner)
@@ -61,7 +61,7 @@
                    (do (println "corner is whack, taking next" "\n" next-candidate-corner) (take-turn computer {next-candidate-corner " o "})))
                  (println "Nobody puts baby in the corner, cause that's where my 'o' goes")))
 
-  (take-side [_ ]
+  (take-side [this]
              (println "taking side")
              (let [my-sides :- (Set (Option Kw)), (s/intersection sides @computer)
                    candidate-side :- (Option Kw), (first (for [side :- (Option Kw), (available-sides)] :- (Option Kw)
@@ -70,27 +70,27 @@
              (println "got the side!"))
 
   ;; validators
-  (can-win? [_ ]
+  (can-win? [this]
             (if (and (has-two? computer) (third computer) (not (@board (third computer))))
               win))
 
-  (can-block? [_ ]
+  (can-block? [this]
               (if (and (has-two? human) (third human) (not (@board (third human))))
                 block))
 
-  (can-fork? [_ ]
+  (can-fork? [this]
              (if (not (empty? (fork-seq computer)))
                fork))
 
-  (can-block-fork? [_ ]
+  (can-block-fork? [this]
                    (if (not (empty? (fork-seq human)))
                      block-fork))
 
-  (can-take-center? [_ ]
+  (can-take-center? [this]
                     (if-not (middle @board)
                       take-center))
 
-  (can-take-opposite-corner? [_ ]
+  (can-take-opposite-corner? [this]
                              (let [complimentary-available? :- Bool,
                                    (boolean (first
                                              (for [corner :- Kw, (s/intersection corners @computer)] :- (Option Kw)
@@ -102,10 +102,10 @@
                                         (not (empty? (candidate-opposite-corners computer))))
                                  take-opposite-corner)))
 
-  (can-take-corner? [_ ]
+  (can-take-corner? [this]
                     (if (and (not (empty? (available-corners))) (first (available-corners)))
                       take-corner))
 
-  (can-take-side? [_ ]
+  (can-take-side? [this]
                   (if (and (not (empty? (available-sides))) (first (available-sides)))
                     take-side)))
