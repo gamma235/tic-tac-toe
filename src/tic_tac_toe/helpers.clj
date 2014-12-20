@@ -8,11 +8,6 @@
 (defalias Set-vec (Vec (Set Kw)))
 (defalias Move (U ':x ':o))
 
-;; unannotated clojure.core functions
-(ann ^:no-check clojure.core/flatten [(ASeq (Option Kw (Seq Kw))) -> (ASeq Kw)])
-(ann ^:no-check clojure.core/hash-map [Key-set Kw -> Any])
-(ann ^:no-check clojure.core/apply [[Key-set Kw -> Any] (Seq (U Key-set Kw)) -> (Map Key-set Kw)])
-
 ;; GAME STATE
 
 ;; Players
@@ -61,24 +56,13 @@
                          (s/intersection pair @player))))))
 
 ;; two type checking errors here!
-(defn third [player :- Player] :- (Option Kw)
-  (let [adjacent-compliments :- (Vec Kw), [:a3 :c1 :c3 :a1 :c2 :c1 :c3 :b3 :a1 :b1 :a2 :a1 :a3 :c3 :c1]
-        adjacent-thirds :- (Seq (U Kw Key-set)), (interleave adjacents adjacent-compliments)
-        opposite-corners-thirds :- (Vec (U Key-set Kw)), [#{:a1 :c3} middle, #{:a3 :c1} middle]
-        opposite-sides-compliments :- (Vec Kw), [:a2 :b1 :b2 :b3 :b2 :c2]
-        opposite-sides-thirds :- (Seq (U Kw Key-set)), (interleave opposite-sides opposite-sides-compliments)
-        thirds-lookup :- (Map Key-set Kw), (apply hash-map (concat adjacent-thirds opposite-corners-thirds opposite-sides-thirds))
-        pairs :- (ASeq (Option Key-set)), (first-twos player)
-        potential-thirds :- (ASeq (ASeq (Option Kw))), (remove nil? (for [pair :- Key-set, pairs] :- (ASeq (Option Kw)),
-                                                         (map
-                                                          (fn [triplet :- Key-set] :- Kw,
-                                                            (if (and
-                                                                 (= triplet (conj pair (thirds-lookup pair)))
-                                                                 (not (@human (thirds-lookup pair))))
-                                                              (thirds-lookup pair)))
-                                                          triplets)))
-        flat-thirds :- (ASeq Kw), (flatten potential-thirds)]
-    (first flat-thirds)))
+(defn ^:no-check third [player :- Player] :- (Option Kw)
+  (let [twos :- (ASeq (Option Key-set)), (first-twos player)
+        open-spaces :- (ASeq Kw), (filter keyword? (apply concat (filter (fn [[k v]] (nil? v)) @board)))
+        thirds :- (Aseq (Option Kw)), (for [two :- (Option Key-set) twos,
+                                            space :- (Option Kw) open-spaces] :- (Option Kw)
+                                        (if (some #{(conj two space)} triplets) space))]
+    (first (filter keyword? thirds))))
 
 (defn take-turn [player :- Player,  position :- (Map Kw String)] :- nil
   (dosync
@@ -107,8 +91,7 @@
         doppel-twos :- [Kw -> (ASeq Player)]
         (fn [space :- Kw] :- (ASeq Player)
           (let [doppelganger :- Player, (ref (set (conj current space)))]
-            (for [two :- Key-set, (first-twos doppelganger)] :- Player
-              (ref (set two)))))
+            (map (fn [a :- (Option Key-set)] :- Player,  (ref (set a))) (first-twos doppelganger))))
 
         get-squares :- [Kw -> (Aseq Kw)]
         (fn [space :- kw] :- (ASeq Kw)

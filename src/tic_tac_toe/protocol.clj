@@ -2,7 +2,6 @@
   (:require [clojure.core.typed :refer :all]))
 
 ;; Creating protocol for both the strategies and the tests that check to see if they are possible
-;; Annotating the protocol for richer specification of type constraints on implementations
 (defprotocol Strategy
   "Strategy methods update the Tic-tac-toe board when they are called"
 
