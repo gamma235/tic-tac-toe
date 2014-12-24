@@ -9,7 +9,7 @@
 (defn -main []
   "starts a game loop that goes, updates screen andgets user input til somebody wins and finishes"
   (let [strategy :- StrategyImpl, (StrategyImpl.)
-        board-full? :- [-> Bool], (fn [] :- Bool (empty? (filter nil? (vals @board))))
+        board-full? :- [-> Bool], (fn [game-board] :- Bool (empty? (filter nil? (vals game-board))))
         winning-strategy :- [-> (Option Any)]
         (fn [] :- (Option Any) (first (remove nil? [(can-win? strategy)
                                                     (can-block? strategy)
@@ -22,29 +22,30 @@
 
         has3? :- [Player -> Bool],
         (fn [player :- Player] :- Bool
-          (not (empty? (filter (fn [a :- Kw] (= (count a) 3))
-                               (for [triple :- Key-set, triplets] :- Key-set
-                                 (s/intersection triple @player))))))
+          (not (empty?
+                (flatten (for [triple :- Key-set, triplets] :- (ASeq (Option Kw))
+                  (remove nil? (some #{(s/intersection triple player)} triplets)))))))
 
-        print-board :- nil,
-        (fn [] (doseq [ln :- (Seq (Vec (Option (U Kw Str)))), (partition 3 (sort @board))] :- nil
-                 (println ln)))]
+               print-board :- nil,
+               (fn [next-move] (doseq [ln :- (Seq (Vec (Option (U Kw Str)))), (partition 3 (sort (merge board next-move)))] :- nil
+                                 (println ln)))]
 
-    (println "\nWelcome to Tic Tac Toe \nSadly, the computer always goes first :(")
+               (println "\nWelcome to Tic Tac Toe \nSadly, the computer always goes first :(")
 
-    (loop []
-      (if (board-full?) (println "Tie game \nThanks for playing!")
-        (do
-          ((winning-strategy) strategy)
-          (if (has3? computer) (do (print-board) (println "I win!"))
-            (if (board-full?) (println "Tie game \nThanks for playing!")
-              (do
-                (println "Your Turn")
-                (print-board)
-                (take-turn human {(keyword (read-line)) " x "})
-                (print-board)
-                (if (has3? human) (println "You win! \nCongratulations!")
-                  (if (board-full?) (println "Tie game \nThanks for playing!")
-                    (do
-                      (println "human turn taken successfully")
-                      (recur))))))))))))
+               (loop [board board
+                      computer computer
+                      human human]
+                 (if (board-full? board) (println "Tie game \nThanks for playing!")
+                   (let [next-comp ((winning-strategy board) strategy)]
+                     (if (has3? (s/union computer #{next-comp})) (do (print-board (merge board {next-comp " o "})) (println "I win!"))
+                       (if (board-full? (merge board {next-comp " o "})) (println "Tie game \nThanks for playing!")
+                         (do
+                           (println "Your Turn")
+                           (print-board (merge board {next-comp " o "}))
+                           (let [next-human (keyword (read-line))]
+                             (print-board  (merge board {next-comp " o "} {next-human " x "}))
+                             (if (has3? (s/union human #{next-human}))
+                               (println "You win! \nCongratulations!")
+                               (do
+                                 (println "human turn taken successfully")
+                                 (recur (merge board {next-comp " o "} {next-human " x "}) next-comp next-human))))))))))))
