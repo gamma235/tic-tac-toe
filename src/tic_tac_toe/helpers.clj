@@ -8,11 +8,6 @@
 (defalias Set-vec (Vec (Set Kw)))
 (defalias Move (U ':x ':o))
 
-;; forward declare bindings
-(clojure.core.typed/def computer #{})
-(clojure.core.typed/def human #{})
-(clojure.core.typed/def board {:a1 nil, :a2 nil, :a3 nil, :b1 nil, :b2 nil, :b3 nil, :c1 nil, :c2 nil, :c3 nil})
-
 ;; special positions
 (clojure.core.typed/def corners :- (Set Kw), #{:a1 :a3 :c1 :c3})
 (clojure.core.typed/def middle :- Kw, :b2)
@@ -40,20 +35,17 @@
                          (s/intersection pair player))))))
 
 ;; two type checking errors here!
-(defn ^:no-check third [player :- Player] :- (Option Kw)
+(defn ^:no-check third [player :- Player, game-board :- (Map Kw (Option Str))] :- (Option Kw)
   (let [twos :- (ASeq (Option Key-set)), (first-twos player)
-        open-spaces :- (ASeq Kw), (filter keyword? (apply concat (filter (fn [[k v]] (nil? v)) board)))
+        open-spaces :- (ASeq Kw), (filter keyword? (apply concat (filter (fn [[k v]] (nil? v)) game-board)))
         thirds :- (Aseq (Option Kw)), (for [two :- (Option Key-set) twos,
                                             space :- (Option Kw) open-spaces] :- (Option Kw)
                                         (if (some #{(conj two space)} triplets) space))]
     (first (filter keyword? thirds))))
 
-(defn take-turn [player :- Player, position :- Key-set] :- nil
-  (s/union player position))
-
-(defn available-corners [] :- (ASeq (Option Kw))
+(defn available-corners [game-board :- (Map Kw (Option Str))] :- (ASeq (Option Kw))
   (remove nil? (for [corner :- Kw, corners] :- (Option Kw)
-                 (if-not (board corner) corner))))
+                 (if-not (game-board corner) corner))))
 
 (defn candidate-opposite-corners [player :- Player] :- (Seq (Option Kw))
   (let [my-corners :- Key-set, (s/intersection player corners)
@@ -62,11 +54,11 @@
     (for [corner :- (Option Kw), opposites] :- (Option Kw)
       (some (fn [kw :- (Option Kw)] :- (Option Kw), (#{corner} kw)) (available-corners)))))
 
-(defn available-sides [] :- (Seq (Option Kw))
-  (filter keyword? (map (fn [side :- Kw] (if-not (board side) side)) sides)))
+(defn available-sides [game-board :- (Map Kw (Option Str))] :- (Seq (Option Kw))
+  (filter keyword? (map (fn [side :- Kw] (if-not (game-board side) side)) sides)))
 
 ;; TODO: add check to block-fork method for '(if-not (empty (for [two :- Key-set (first-twos (conj current-human square))] (human-winnable? two))))'
-(defn fork-seq [player :- Player] :- (ASeq (Option Kw))
+(defn fork-seq [player :- Player, computer :- Player, human :- Player, game-board :- (Map Kw (Option Str))] :- (ASeq (Option Kw))
   (let [doppel-twos :- [Kw -> (ASeq Player)]
         (fn [space :- Kw] :- (ASeq Player)
           (let [doppelganger :- Player, (set (conj player space))]
@@ -81,14 +73,14 @@
         (fn [space :- Kw] :- (Option Bool)
           (let [doppelganger :- Player, (set (conj player space))]
             (if (and (has-two? doppelganger)
-                     (third doppelganger)
-                     (not (board (third doppelganger))))
+                     (third doppelganger game-board)
+                     (not (game-board (third doppelganger game-board))))
               true)))]
-    (filter keyword? (map (fn [square :-　Kw] (if (and (not (board square))
-                                                      (<= 2 (count (remove nil? (map third (doppel-twos square)))))
+    (filter keyword? (map (fn [square :-　Kw] (if (and (not (game-board square))
+                                                      (<= 2 (count (remove nil? (map #(third % game-board) (doppel-twos square)))))
                                                       (not (human square))
                                                       (not (computer square))
                                                       (< (count (set (get-squares square))) (count (get-squares square)))
-                                                      (< 1 (count (first-twos (ref (conj player square)))))
+                                                      (< 1 (count (first-twos (conj player square))))
                                                       (winnable? square)) square))
-                          (keys board)))))
+                          (keys game-board)))))

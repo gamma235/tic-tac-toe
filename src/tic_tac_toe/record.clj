@@ -8,96 +8,97 @@
 (defrecord StrategyImpl []
 
   Strategy
-  (win [this]
+  (win [this computer human board]
        (println "winning")
-       (third computer))
+       (third computer board))
 
-  (block [this]
+  (block [this computer human board]
          (println "blocking")
-         (third human))
+         (third human board))
 
-  (fork [this]
+  (fork [this computer human board]
         (println "forking")
-        (first (fork-seq computer)))
+        (first (fork-seq computer computer human board)))
 
-  (block-fork [this]
-              (println "blocking your fork")
-              (first (fork-seq human)))
+  (blockFork [this computer human board]
+             (println "blocking your fork")
+             (first (fork-seq human computer human board)))
 
-  (take-center [this]
-               (println "taking center")
-               middle)
+  (takeCenter [this computer human board]
+              (println "taking center")
+              middle)
 
-  (take-opposite-corner [this]
-                        (println "taking opposite corner")
-                        (let [my-corners :- (Set (Option Kw)), (s/intersection corners @computer)
-                              candidate-corner :- (Option Kw), (first (map (fn [corner :- (Option Kw)] :- (Option Kw)
-                                                                             (if-not (board corner)
-                                                                               (complimentary-corners corner))) my-corners))]
-                          candidate-corner))
+  (takeOppositeCorner [this computer human board]
+                      (println "taking opposite corner")
+                      (let [my-corners :- (Set (Option Kw)), (s/intersection corners computer)
+                            candidate-corner :- (Option Kw), (first (map (fn [corner :- (Option Kw)] :- (Option Kw)
+                                                                           (if-not (board corner)
+                                                                             (complimentary-corners corner))) my-corners))]
+                        candidate-corner))
 
-  (take-corner [this]
-               (println "taking corner")
-               (let [candidate-corner :- Kw, (first (map (fn [corner :- Kw] :- (Option Kw)
-                                                           (if-not (board corner)
-                                                             corner))  (available-corners)))
+  (takeCorner [this computer human board]
+              (println "taking corner")
+              (let [candidate-corner :- Kw, (first (map (fn [corner :- Kw] :- (Option Kw)
+                                                          (if-not (board corner)
+                                                            corner))  (available-corners board)))
 
-                     next-candidate-corner :- Kw, (second (map (fn [corner :- Kw] :- (Option Kw)
-                                                                 (if-not (board corner)
-                                                                   corner))  (available-corners)))
+                    next-candidate-corner :- Kw, (second (map (fn [corner :- Kw] :- (Option Kw)
+                                                                (if-not (board corner)
+                                                                  corner))  (available-corners board)))
 
-                     opposite-corner :- Kw, (candidate-corner complimentary-corners)
-                     corner-good? :- [-> Bool], (fn [] (if (or (not next-candidate-corner)
-                                                               (not (board opposite-corner)))
-                                                         true false))]
-                 (if (corner-good?)
-                   (do (println "corner is good, taking it") (take-turn computer #{candidate-corner}))
-                   (do (println "corner is whack, taking next" "\n" next-candidate-corner) next-candidate-corner))))
+                    opposite-corner :- Kw, (candidate-corner complimentary-corners)
+                    corner-good? :- [-> Bool], (fn [] (if (or (not next-candidate-corner)
+                                                              (not (board opposite-corner)))
+                                                        true false))]
+                (if (corner-good?)
+                  (do (println "corner is good, taking it") candidate-corner)
+                  (do (println "corner is whack, taking next" "\n" next-candidate-corner) next-candidate-corner))))
 
-  (take-side [this]
-             (println "taking side")
-             (let [my-sides :- (Set (Option Kw)), (s/intersection sides computer)
-                   candidate-side :- (Option Kw), (first (map (fn [side :- (Option Kw)] :- (Option Kw)
-                                                                (if-not (board side) side))  (available-corners)))]
-               candidate-side))
+  (takeSide [this computer human board]
+            (println "taking side")
+            (let [my-sides :- (Set (Option Kw)), (s/intersection sides computer)
+                  candidate-side :- (Option Kw), (first (map (fn [side :- (Option Kw)] :- (Option Kw)
+                                                               (if-not (board side) side))  (available-sides board)))]
+              candidate-side))
 
   ;; validators
-  (can-win? [this]
-            (if (and (has-two? computer) (third computer) (not (board (third computer))))
-              win))
+  (canWin [this computer human board]
+          (println "comp " computer " human " human)
+          (if (and (has-two? computer) (third computer board) (not (board (third computer board))))
+            win))
 
-  (can-block? [this]
-              (if (and (has-two? human) (third human) (not (board (third human))))
-                block))
+  (canBlock [this computer human board]
+            (if (and (has-two? human) (third human board) (not (board (third human board))))
+              block))
 
-  (can-fork? [this]
-             (if (not (empty? (fork-seq computer)))
-               fork))
+  (canFork [this computer human board]
+           (if (not (empty? (fork-seq computer computer human board)))
+             fork))
 
-  (can-block-fork? [this]
-                   (if (not (empty? (fork-seq human)))
-                     block-fork))
+  (canBlockFork [this computer human board]
+                (if (not (empty? (fork-seq human computer human board)))
+                  blockFork))
 
-  (can-take-center? [this board]
-                    (if-not (middle board)
-                      take-center))
+  (canTakeCenter [this computer human board]
+                 (if-not (middle board)
+                   takeCenter))
 
-  (can-take-opposite-corner? [this]
-                             (let [complimentary-available? :- Bool,
-                                   (boolean (first
-                                             (map (fn [corner :- Kw] :- (Option Kw)
-                                                    (if-not (corner board)
-                                                      (complimentary-corners corner))) (s/intersection corners computer))))]
-                               (if (and complimentary-available?
-                                        (first (available-corners))
-                                        (first (candidate-opposite-corners computer))
-                                        (not (empty? (candidate-opposite-corners computer))))
-                                 take-opposite-corner)))
+  (canTakeOppositeCorner [this computer human board]
+                         (let [complimentary-available? :- Bool,
+                               (boolean (first
+                                         (map (fn [corner :- Kw] :- (Option Kw)
+                                                (if-not (corner board)
+                                                  (complimentary-corners corner))) (s/intersection corners computer))))]
+                           (if (and complimentary-available?
+                                    (first (available-corners board))
+                                    (first (candidate-opposite-corners computer))
+                                    (not (empty? (candidate-opposite-corners computer))))
+                             takeOppositeCorner)))
 
-  (can-take-corner? [this]
-                    (if (and (not (empty? (available-corners))) (first (available-corners)))
-                      take-corner))
+  (canTakeCorner [this computer human board]
+                 (if (and (not (empty? (available-corners board))) (first (available-corners board)))
+                   takeCorner))
 
-  (can-take-side? [this]
-                  (if (and (not (empty? (available-sides))) (first (available-sides)))
-                    take-side)))
+  (canTakeSide [this computer human board]
+               (if (and (not (empty? (available-sides board))) (first (available-sides board)))
+                 takeSide)))
