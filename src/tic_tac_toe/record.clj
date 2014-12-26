@@ -26,38 +26,26 @@
 
   (takeCenter [this computer human board]
               (println "taking center")
-              middle)
+              (if-not (board middle) middle))
 
   (takeOppositeCorner [this computer human board]
                       (println "taking opposite corner")
                       (let [my-corners :- (Set (Option Kw)), (s/intersection corners computer)
                             candidate-corner :- (Option Kw), (first (map (fn [corner :- (Option Kw)] :- (Option Kw)
-                                                                           (if-not (board corner)
-                                                                             (complimentary-corners corner))) my-corners))]
+                                                                           (complimentary-corners corner)) my-corners))]
                         candidate-corner))
 
   (takeCorner [this computer human board]
               (println "taking corner")
-              (let [candidate-corner :- Kw, (first (map (fn [corner :- Kw] :- (Option Kw)
-                                                          (if-not (board corner)
-                                                            corner))  (available-corners board)))
-
-                    next-candidate-corner :- Kw, (second (map (fn [corner :- Kw] :- (Option Kw)
-                                                                (if-not (board corner)
-                                                                  corner))  (available-corners board)))
-
-                    opposite-corner :- Kw, (candidate-corner complimentary-corners)
-                    corner-good? :- [-> Bool], (fn [] :- Bool (if (or (not next-candidate-corner)
-                                                              (not (board opposite-corner)))
-                                                        true false))]
-                (if (corner-good?) candidate-corner next-candidate-corner)))
+              (first (map (fn [corner :- Kw] :- (Option Kw)
+                            (if-not (board corner)
+                              corner))  (available-corners board))))
 
   (takeSide [this computer human board]
             (println "taking side")
-            (let [my-sides :- (Set (Option Kw)), (s/intersection sides computer)
-                  candidate-side :- (Option Kw), (first (map (fn [side :- (Option Kw)] :- (Option Kw)
-                                                               (if-not (board side) side))  (available-sides board)))]
-              candidate-side))
+            (first (map (fn [side :- (Option Kw)] :- (Option Kw)
+                          (if-not (board side) side))
+                        (available-sides board))))
 
   ;; validators
   (canWin [this computer human board]
@@ -82,16 +70,9 @@
                    takeCenter))
 
   (canTakeOppositeCorner [this computer human board]
-                         (let [complimentary-available? :- Bool,
-                               (boolean (first
-                                         (map (fn [corner :- Kw] :- (Option Kw)
-                                                (if-not (corner board)
-                                                  (complimentary-corners corner))) (s/intersection corners computer))))]
-                           (if (and complimentary-available?
-                                    (first (available-corners board))
-                                    (first (candidate-opposite-corners computer))
-                                    (not (empty? (candidate-opposite-corners computer))))
-                             takeOppositeCorner)))
+                         (if (and (first (available-corners board))
+                                  (first (candidate-opposite-corners computer board)))
+                           takeOppositeCorner))
 
   (canTakeCorner [this computer human board]
                  (if (and (not (empty? (available-corners board))) (first (available-corners board)))

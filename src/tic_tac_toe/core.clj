@@ -13,8 +13,8 @@
         (fn [game-board :- (Map Kw (Option Str))] :- Bool
           (empty? (filter nil? (vals game-board))))
 
-        winning-strategy :- [Player Player (Map Kw (Option Str)) -> (Option Any)]
-        (fn [computer :- Player, human :- Player, game-board :- (Map Kw (Option Str))] :- (Option Any)
+        winning-strategy :- [Player Player (Map Kw (Option Str)) -> Any]
+        (fn [computer :- Player, human :- Player, game-board :- (Map Kw (Option Str))] :- Any
           (first (remove nil? [(canWin strategy computer human game-board)
                                (canBlock strategy computer human game-board)
                                (canFork strategy computer human game-board)
@@ -42,8 +42,8 @@
 
     (loop [computer :- Player, #{}
            human :- Player #{}
-           board :- (Map Kw (Option Str)), {:a1 nil, :a2 nil, :a3 nil,
-                                            :b1 nil, :b2 nil, :b3 nil,
+           board :- (Map Kw (Option Str)), {:a1 nil, :a2 nil, :a3 nil
+                                            :b1 nil, :b2 nil, :b3 nil
                                             :c1 nil, :c2 nil, :c3 nil}]
 
       (if (board-full? board) (println "Tie game \nThanks for playing!")

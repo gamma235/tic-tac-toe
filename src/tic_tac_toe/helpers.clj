@@ -6,7 +6,6 @@
 (defalias Key-set (Set (Option Kw)))
 (defalias Player Key-set)
 (defalias Set-vec (Vec (Set Kw)))
-(defalias Move (U ':x ':o))
 
 ;; special positions
 (clojure.core.typed/def corners :- (Set Kw), #{:a1 :a3 :c1 :c3})
@@ -34,7 +33,7 @@
                        (for [pair :- Key-set, opposite-corners] :- (Option Key-set)
                          (s/intersection pair player))))))
 
-(defn ^:no-check third [player :- Player, game-board :- (Map Kw (Option Str))] :- (Option Kw)
+(defn third [player :- Player, game-board :- (Map Kw (Option Str))] :- (Option Kw)
   (let [twos :- (ASeq (Option Key-set)), (first-twos player)
         open-spaces :- (ASeq Kw), (filter keyword? (apply concat (filter (fn [[k v] :- (ASeq (U Kw Str nil))] :- Bool (nil? v)) game-board)))
         thirds :- (ASeq (Option Kw)), (for [two :- (Option Key-set), twos
@@ -56,8 +55,7 @@
 (defn available-sides [game-board :- (Map Kw (Option Str))] :- (Seq (Option Kw))
   (filter keyword? (map (fn [side :- Kw] (if-not (game-board side) side)) sides)))
 
-;; TODO: add check to block-fork method for '(if-not (empty (for [two :- Key-set (first-twos (conj current-human square))] (human-winnable? two))))'
-(defn ^:no-check fork-seq [player :- Player, computer :- Player, human :- Player, game-board :- (Map Kw (Option Str))] :- (ASeq (Option Kw))
+(defn fork-seq [player :- Player, computer :- Player, human :- Player, game-board :- (Map Kw (Option Str))] :- (ASeq (Option Kw))
   (let [doppel-twos :- [Kw -> (ASeq Player)]
         (fn [space :- Kw] :- (ASeq Player)
           (let [doppelganger :- Player, (set (conj player space))]
