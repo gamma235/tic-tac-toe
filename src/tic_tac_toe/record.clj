@@ -5,7 +5,7 @@
             [clojure.core.typed :refer :all]))
 
 ;;;; Strategy protocol implmementation ;;;;
-(defrecord StrategyImpl []
+(defrecord ^:no-check StrategyImpl []
 
   Strategy
   (win [this computer human board]
@@ -47,12 +47,10 @@
                                                                   corner))  (available-corners board)))
 
                     opposite-corner :- Kw, (candidate-corner complimentary-corners)
-                    corner-good? :- [-> Bool], (fn [] (if (or (not next-candidate-corner)
+                    corner-good? :- [-> Bool], (fn [] :- Bool (if (or (not next-candidate-corner)
                                                               (not (board opposite-corner)))
                                                         true false))]
-                (if (corner-good?)
-                  (do (println "corner is good, taking it") candidate-corner)
-                  (do (println "corner is whack, taking next" "\n" next-candidate-corner) next-candidate-corner))))
+                (if (corner-good?) candidate-corner next-candidate-corner)))
 
   (takeSide [this computer human board]
             (println "taking side")

@@ -34,12 +34,11 @@
                        (for [pair :- Key-set, opposite-corners] :- (Option Key-set)
                          (s/intersection pair player))))))
 
-;; two type checking errors here!
 (defn ^:no-check third [player :- Player, game-board :- (Map Kw (Option Str))] :- (Option Kw)
   (let [twos :- (ASeq (Option Key-set)), (first-twos player)
-        open-spaces :- (ASeq Kw), (filter keyword? (apply concat (filter (fn [[k v]] (nil? v)) game-board)))
-        thirds :- (Aseq (Option Kw)), (for [two :- (Option Key-set) twos,
-                                            space :- (Option Kw) open-spaces] :- (Option Kw)
+        open-spaces :- (ASeq Kw), (filter keyword? (apply concat (filter (fn [[k v] :- (ASeq (U Kw Str nil))] :- Bool (nil? v)) game-board)))
+        thirds :- (ASeq (Option Kw)), (for [two :- (Option Key-set), twos
+                                            space :- Kw, open-spaces] :- (Option Kw)
                                         (if (some #{(conj two space)} triplets) space))]
     (first (filter keyword? thirds))))
 
@@ -47,25 +46,25 @@
   (remove nil? (for [corner :- Kw, corners] :- (Option Kw)
                  (if-not (game-board corner) corner))))
 
-(defn candidate-opposite-corners [player :- Player] :- (Seq (Option Kw))
+(defn candidate-opposite-corners [player :- Player, game-board :- (Map Kw (Option Str))] :- (ASeq (Option Kw))
   (let [my-corners :- Key-set, (s/intersection player corners)
-        opposites :- (Seq (Option Kw)), (for [corner :- (Option Kw), my-corners] :- (Option Kw)
-                                          (complimentary-corners corner))]
+        opposites :- (clojure.lang.LazySeq (Option Kw)), (for [corner :- (Option Kw), my-corners] :- (Option Kw)
+                                                           (complimentary-corners corner))]
     (for [corner :- (Option Kw), opposites] :- (Option Kw)
-      (some (fn [kw :- (Option Kw)] :- (Option Kw), (#{corner} kw)) (available-corners)))))
+      (some (fn [Kw :- (Option Kw)] :- (Option Kw), (#{corner} Kw)) (available-corners game-board)))))
 
 (defn available-sides [game-board :- (Map Kw (Option Str))] :- (Seq (Option Kw))
   (filter keyword? (map (fn [side :- Kw] (if-not (game-board side) side)) sides)))
 
 ;; TODO: add check to block-fork method for '(if-not (empty (for [two :- Key-set (first-twos (conj current-human square))] (human-winnable? two))))'
-(defn fork-seq [player :- Player, computer :- Player, human :- Player, game-board :- (Map Kw (Option Str))] :- (ASeq (Option Kw))
+(defn ^:no-check fork-seq [player :- Player, computer :- Player, human :- Player, game-board :- (Map Kw (Option Str))] :- (ASeq (Option Kw))
   (let [doppel-twos :- [Kw -> (ASeq Player)]
         (fn [space :- Kw] :- (ASeq Player)
           (let [doppelganger :- Player, (set (conj player space))]
-            (map (fn [a :- (Option Key-set)] :- Player,  (set a)) (first-twos doppelganger))))
+            (first-twos doppelganger)))
 
-        get-squares :- [Kw -> (Aseq Kw)]
-        (fn [space :- kw] :- (ASeq Kw)
+        get-squares :- [Kw -> (ASeq Kw)]
+        (fn [space :- Kw] :- (ASeq Kw)
           (let [doppelganger :- Player, (conj player space)]
             (apply concat (first-twos doppelganger))))
 
@@ -76,7 +75,7 @@
                      (third doppelganger game-board)
                      (not (game-board (third doppelganger game-board))))
               true)))]
-    (filter keyword? (map (fn [square :-　Kw] (if (and (not (game-board square))
+    (filter keyword? (map (fn [square :-　Kw] :- (Option Kw) (if (and (not (game-board square))
                                                       (<= 2 (count (remove nil? (map #(third % game-board) (doppel-twos square)))))
                                                       (not (human square))
                                                       (not (computer square))

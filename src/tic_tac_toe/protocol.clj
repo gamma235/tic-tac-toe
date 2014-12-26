@@ -21,7 +21,7 @@
   (takeCenter [this computer human board] :- (Set (Option Kw))
    "takes center")
 
-  (takeOppositeCorner [this computer human board] :- (Set (Option Kw))
+  (takeOppositeCorner[this computer human board] :- (Set (Option Kw))
    "takes a corner opposite to one the computer already has")
 
   (takeCorner [this computer human board] :- (Set (Option Kw))
