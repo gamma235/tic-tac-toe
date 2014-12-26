@@ -42,7 +42,10 @@
 
     (loop [computer :- Player, #{}
            human :- Player #{}
-           board :- (Map Kw (Option Str)), {:a1 nil, :a2 nil, :a3 nil, :b1 nil, :b2 nil, :b3 nil, :c1 nil, :c2 nil, :c3 nil}]
+           board :- (Map Kw (Option Str)), {:a1 nil, :a2 nil, :a3 nil,
+                                            :b1 nil, :b2 nil, :b3 nil,
+                                            :c1 nil, :c2 nil, :c3 nil}]
+
       (if (board-full? board) (println "Tie game \nThanks for playing!")
         (let [next-comp :- Kw ((winning-strategy computer human board) strategy computer human board)]
           (if (has3? (s/union computer #{next-comp}) next-comp) (do (print-board (merge board {next-comp " o "})) (println "I win!"))
@@ -50,7 +53,14 @@
               (do
                 (println "Your Turn")
                 (print-board (merge board {next-comp " o "}))
-                (let [next-human :- Kw (keyword (read-line))]
+                (let [next-human :- Kw (loop [nexto (keyword (read-line))]
+                                         (if (and
+                                              (some #{nexto} (keys board))
+                                              (not (some #{nexto} (s/union human computer #{next-comp}))))
+                                           nexto
+                                           (do
+                                             (println "Illegal move \nTry again!")
+                                             (recur (keyword (read-line))))))]
                   (print-board  (merge board {next-comp " o "} {next-human " x "}))
                   (if (has3? (s/union human #{next-human}) next-human)
                     (println "You win! \nCongratulations!")
