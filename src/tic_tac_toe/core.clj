@@ -41,15 +41,15 @@
 (defn print-board
   "prints the game board"
   [{:keys [a1 a2 a3, b1 b2 b3, c1 c2 c3]} :- (Map Kw (Option Str))] :- nil
-  (let [a1 (if (string? a1) a1 " a1")
-        a2 (if (string? a2) a2 " a2")
-        a3 (if (string? a3) a3 " a3")
-        b1 (if (string? b1) b1 " b1")
-        b2 (if (string? b2) b2 " b2")
-        b3 (if (string? b3) b3 " b3")
-        c1 (if (string? c1) c1 " c1")
-        c2 (if (string? c2) c2 " c2")
-        c3 (if (string? c3) c3 " c3")]
+  (let [a1 :- Str (if (string? a1) a1 " a1")
+        a2 :- Str (if (string? a2) a2 " a2")
+        a3 :- Str (if (string? a3) a3 " a3")
+        b1 :- Str (if (string? b1) b1 " b1")
+        b2 :- Str (if (string? b2) b2 " b2")
+        b3 :- Str (if (string? b3) b3 " b3")
+        c1 :- Str (if (string? c1) c1 " c1")
+        c2 :- Str (if (string? c2) c2 " c2")
+        c3 :- Str (if (string? c3) c3 " c3")]
     (println  a1 "|" a2"|" a3)
     (println "____|_____|____")
     (println "    |     |    ")
