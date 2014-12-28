@@ -23,7 +23,7 @@
 (defn first-twos
   "returns a seq of sets, each representing two taken squares, that could lead to a win"
   [player :- Key-set] :- (ASeq (Option Key-set))
-  (let [couples :- (Seqable Key-set), (concat adjacents opposite-corners opposite-sides)]
+  (let [couples :- Key-set, (concat adjacents opposite-corners opposite-sides)]
     (filter (fn [a :- (Option Key-set)] (= (count a) 2))
             (for [pair :- Key-set, couples] :- (Option Key-set)
               (s/intersection pair player)))))
