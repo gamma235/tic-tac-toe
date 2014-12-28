@@ -17,7 +17,7 @@
 
 (defn winning-strategy
   "returns the best strategy for a given board"
-  [strategy :- StrategyImpl, computer :- Player, human :- Player, game-board :- (Map Kw (Option Str))] :- Any
+  [strategy :- StrategyImpl, computer :- Key-set, human :- Key-set, game-board :- (Map Kw (Option Str))] :- Any
   (first (remove nil? [(canWin strategy computer human game-board)
                        (canBlock strategy computer human game-board)
                        (canFork strategy computer human game-board)
@@ -29,7 +29,7 @@
 
 (defn has3?
   "returns true if the player has three in a row"
-  [player :- Player, next-move :- Kw] :- Bool
+  [player :- Key-set, next-move :- Kw] :- Bool
   (let [doable-triples :- (ASeq (Option Key-set))
         (map (fn [a :- Key-set] :- (Option Key-set)
                (conj a next-move)) (first-twos player))]
@@ -62,8 +62,8 @@
   "starts a game loop that runs, updates the screen and gets user input until somebody wins and finishes"
   (let [strategy :- StrategyImpl, (StrategyImpl.)]
     (println "\nWelcome to Tic Tac Toe \n\nSadly, the computer always goes first (T_T)")
-    (loop [computer :- Player, #{}
-           human :- Player #{}
+    (loop [computer :- Key-set, #{}
+           human :- Key-set #{}
            board :- (Map Kw (Option Str)), {:a1 nil :a2 nil :a3 nil, :b1 nil :b2 nil :b3 nil, :c1 nil :c2 nil :c3 nil}]
       (if (board-full? board)
         (println "Tie game \nThanks for playing!")

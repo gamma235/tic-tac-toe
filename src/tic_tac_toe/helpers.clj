@@ -6,7 +6,6 @@
 
 ;; aliases for core.typed signatures
 (defalias Key-set (Set (Option Kw)))
-(defalias Player Key-set)
 (defalias Set-vec (Vec (Set Kw)))
 
 ;; special positions
@@ -23,7 +22,7 @@
 ;; helpers
 (defn first-twos
   "returns a seq of sets, each representing two taken squares, that could lead to a win"
-  [player :- Player] :- (ASeq (Option Key-set))
+  [player :- Key-set] :- (ASeq (Option Key-set))
   (let [couples :- (Seqable Key-set), (concat adjacents opposite-corners opposite-sides)]
     (filter (fn [a :- (Option Key-set)] (= (count a) 2))
             (for [pair :- Key-set, couples] :- (Option Key-set)
@@ -31,19 +30,19 @@
 
 (defn has-two?
   "tells if provided has taken two spaces that can lead to a possible third"
-  [player :- Player] :- Bool
+  [player :- Key-set] :- Bool
   (not (empty? (first-twos player))))
 
 (defn has-opposite-corners?
   "tells if provided player has two opposite corners"
-  [player :- Player] :- Bool
+  [player :- Key-set] :- Bool
   (not (empty? (filter (fn [a :- (Option Key-set)] (= (count a) 2))
                        (for [pair :- Key-set, opposite-corners] :- (Option Key-set)
                          (s/intersection pair player))))))
 
 (defn third
   "gives the space that if taken will win the game for the provided player"
-  [player :- Player, game-board :- (Map Kw (Option Str))] :- (Option Kw)
+  [player :- Key-set, game-board :- (Map Kw (Option Str))] :- (Option Kw)
   (let [twos :- (ASeq (Option Key-set)), (first-twos player)
         open-spaces :- (ASeq Kw), (filter keyword? (apply concat (filter (fn [[k v] :- (ASeq (U Kw Str nil))] :- Bool (nil? v)) game-board)))
         thirds :- (ASeq (Option Kw)), (for [two :- (Option Key-set), twos
@@ -59,7 +58,7 @@
 
 (defn candidate-opposite-corners
   "tells which corner a player can take that is opposite one he/she already has"
-  [player :- Player, game-board :- (Map Kw (Option Str))] :- (ASeq (Option Kw))
+  [player :- Key-set, game-board :- (Map Kw (Option Str))] :- (ASeq (Option Kw))
   (let [my-corners :- Key-set, (s/intersection player corners)
         opposites :- (clojure.lang.LazySeq (Option Kw)), (for [corner :- (Option Kw), my-corners] :- (Option Kw)
                                                            (complimentary-corners corner))]
@@ -71,28 +70,27 @@
   [game-board :- (Map Kw (Option Str))] :- (Seq (Option Kw))
   (filter keyword? (map (fn [side :- Kw] (if-not (game-board side) side)) sides)))
 
-
 (defn fork-seq
   "bad mamma jamma function that gives a seq of spaces that can lead to a fork"
-  [player :- Player, computer :- Player, human :- Player, game-board :- (Map Kw (Option Str))] :- (ASeq (Option Kw))
+  [player :- Key-set, computer :- Key-set, human :- Key-set, game-board :- (Map Kw (Option Str))] :- (ASeq (Option Kw))
   (let [;; bind three functions to the local scope
 
         ;; doppel-twos returns twos for the scenario in which the space provided is taken
-        doppel-twos :- [Kw -> (ASeq Player)]
-        (fn [space :- Kw] :- (ASeq Player)
-          (let [doppelganger :- Player, (set (conj player space))]
+        doppel-twos :- [Kw -> (ASeq Key-set)]
+        (fn [space :- Kw] :- (ASeq Key-set)
+          (let [doppelganger :- Key-set, (set (conj player space))]
             (first-twos doppelganger)))
 
         ;; get-squares provides a seq of squares for the case in which the space is taken
         get-squares :- [Kw -> (ASeq Kw)]
         (fn [space :- Kw] :- (ASeq Kw)
-          (let [doppelganger :- Player, (conj player space)]
+          (let [doppelganger :- Key-set, (conj player space)]
             (apply concat (first-twos doppelganger))))
 
         ;; winnable? tells whether taking the space will provide a scenario that can lead to a win
         winnable? :- [Kw -> (Option Bool)]
         (fn [space :- Kw] :- (Option Bool)
-          (let [doppelganger :- Player, (set (conj player space))]
+          (let [doppelganger :- Key-set, (set (conj player space))]
             (if (and (has-two? doppelganger)
                      (third doppelganger game-board)
                      (not (game-board (third doppelganger game-board))))
