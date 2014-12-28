@@ -1,24 +1,11 @@
 (defproject tic-tac-toe "0.1.0-SNAPSHOT"
-  :description "FIXME: write this!"
+  :description "Stateless command line Tic Tac Toe game"
   :url "http://example.com/FIXME"
 
   :dependencies [[org.clojure/clojure "1.7.0-alpha4"]
-                 [org.clojure/clojurescript "0.0-2371"]
                  [org.clojure/core.typed "0.2.72"]
-                 [expectations "2.0.4"]
-                 [lein-autoexpect "1.2.2"]]
+                 [expectations "2.0.9"]]
 
-  :plugins [[lein-cljsbuild "1.0.4-SNAPSHOT"]]
-
+  :plugins [[lein-expectations "0.0.7"]]
   :source-paths ["src"]
-
-  :main tic-tac-toe.core
-
-  :cljsbuild {
-    :builds [{:id "tic-tac-toe"
-              :source-paths ["src"]
-              :compiler {
-                :output-to "tic_tac_toe.js"
-                :output-dir "out"
-                :optimizations :none
-                :source-map true}}]})
+  :main tic-tac-toe.core)
