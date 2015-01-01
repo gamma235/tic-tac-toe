@@ -4,7 +4,7 @@
             [tic-tac-toe.protocol :refer :all]
             [tic-tac-toe.helpers :refer :all]
             [clojure.core.typed :refer [U Set Vec Bool Kw ASeq Seq Map Str Option
-                                        let defn fn for defalias loop defprotocol] :as t]))
+                                        let defn fn for defalias loop defprotocol]]))
 
 
 ;; Implementing Strategy protocol

@@ -4,8 +4,7 @@
             [clojure.core.typed :refer [U Set Vec Bool Kw ASeq Seq Map Str Option
                                         let defn fn for defalias loop defprotocol] :as t]))
 
-;; aliases for core.typed signatures
-(defalias Key-set (Set (Option Kw)))
+
 (defalias Set-vec (Vec (Set Kw)))
 
 ;; special positions

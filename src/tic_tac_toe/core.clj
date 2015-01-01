@@ -5,9 +5,8 @@
             [tic-tac-toe.record :refer :all]
             [tic-tac-toe.helpers :refer :all]
             [clojure.core.typed :refer [U Set Vec Bool Kw ASeq Seq Map Str Option
-                                        let defn fn for defalias loop defprotocol] :as t])
+                                        let defn fn for loop defprotocol]])
   (:import [tic_tac_toe.record StrategyImpl]))
-
 
 (defn board-full?
   "tells if a board is full or not"
