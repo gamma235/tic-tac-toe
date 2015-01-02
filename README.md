@@ -1,4 +1,4 @@
-ABOUT:
+ABOUT
 
 Stateless, command line Tic Tac Toe game implemented using protocols/records. Annotated with core.typed.     To run it:
 
@@ -6,7 +6,7 @@ Stateless, command line Tic Tac Toe game implemented using protocols/records. An
     cd tic-tac-toe/src
     lein run
 
-TODOS:
+TODOS
 
 1. add coin toss to decide who goes first
 2. add new record for easy mode
